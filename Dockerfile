@@ -6,7 +6,7 @@ ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
 RUN pip install --upgrade pip
-COPY ./requirements.txt /usr/src/app/requirements.txt
+COPY ./web/requirements.txt /usr/src/app/requirements.txt
 RUN pip install -r requirements.txt
 
 RUN pip install gunicorn
