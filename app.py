@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 import tempfile
 import datetime
 
-UPLOAD_FOLDER = '/tmp'
+UPLOAD_FOLDER = '../tmp'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
