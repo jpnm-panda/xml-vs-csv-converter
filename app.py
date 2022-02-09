@@ -25,24 +25,31 @@ def allowed_file(filename):
     # ファイルの拡張子が.xml, .csv なら1 をそれ以外なら0を返す
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/', methods=['POST', 'GET'])
+# アップロードされたファイルがちゃんと存在しているかを確認する
+def existing_file(file):
+    # リクエストの中にファイルがあるかを確認する
+    if file not in request.files:
+        # ファイルが無いことの警告文
+        flash('No file part')
+        # リダイレクトさせる処理（以下省略）
+        return redirect(request.url)
+    
+    # ファイルの名前が空白でないかを確認する
+    if file.filename == '':
+        # ファイル名が無いことの警告文
+        flash('No file part')
+        return redirect(request.url)
+
+@app.route('/', methods=['GET', 'POST'])
 def upload_file():
     # ポストのリクエストを受け取った時に処理を動かす
     if request.method == 'POST':
-          
-        # リクエストの中にファイルがあるかを確認する
-        if 'file' not in request.files:
-              # リダイレクトさせる処理（以下省略）
-              return redirect(request.url)
-        # ファイルが含まれる時は、file に値を格納する
-        file = request.files['file']
-
-        # ファイルの名前が空白出ないかを確認する
-        if file.filename == '':
-            return redirect(request.url)
         
-        # file がしっかり存在し、filename の拡張子が問題ない場合、処理を動かす
-        if file and allowed_file(file.filename):
+        # file にPOST された値を格納する
+        file = request.files['file']
+        
+        # 受けとった値が存在し、filename の拡張子が問題ない場合、処理を動かす
+        if file and existing_file(file) and allowed_file(file.filename):
               # 危険な文字を削除する
               filename = secure_filename(file.filename)
               # 問題なければファイルを/tmp ディレクトリに保存する
