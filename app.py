@@ -5,7 +5,7 @@ from pickle import TRUE
 from re import U, template
 import re
 from tabnanny import filename_only
-from flask import Flask, flash, request, redirect, url_for
+from flask import Flask, flash, request, redirect, url_for, render_template
 import redis
 import os
 from werkzeug.utils import secure_filename
@@ -31,6 +31,12 @@ def existing_file(file):
     # リクエストの中にファイルがあるかとファイル名が空白でないかを確認する
    return False if file not in request.files and file.filename == '' else True
 
+@app.route('/', methods=['GET'])
+def upload_view():
+    if request.method == 'GET':
+     return render_template('upload.html')
+        
+
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     # ポストのリクエストを受け取った時に処理を動かす
@@ -50,12 +56,4 @@ def upload_file():
               # 問題なければファイルを/tmp ディレクトリに保存する
               file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
               return redirect(request.url)
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+    return 
