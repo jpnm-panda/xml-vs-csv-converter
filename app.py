@@ -1,6 +1,7 @@
 from crypt import methods
 from curses import flash
 from fileinput import filename
+from pickle import TRUE
 from re import U, template
 import re
 from tabnanny import filename_only
@@ -27,18 +28,8 @@ def allowed_file(filename):
 
 # アップロードされたファイルがちゃんと存在しているかを確認する
 def existing_file(file):
-    # リクエストの中にファイルがあるかを確認する
-    if file not in request.files:
-        # ファイルが無いことの警告文
-        flash('No file part')
-        # リダイレクトさせる処理（以下省略）
-        return redirect(request.url)
-    
-    # ファイルの名前が空白でないかを確認する
-    if file.filename == '':
-        # ファイル名が無いことの警告文
-        flash('No file part')
-        return redirect(request.url)
+    # リクエストの中にファイルがあるかとファイル名が空白でないかを確認する
+   return False if file not in request.files and file.filename == '' else True
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -48,8 +39,12 @@ def upload_file():
         # file にPOST された値を格納する
         file = request.files['file']
         
-        # 受けとった値が存在し、filename の拡張子が問題ない場合、処理を動かす
-        if file and existing_file(file) and allowed_file(file.filename):
+        # 受けとったファイルの値が存在しない場合は、リダイレクトする
+        if existing_file(file) == False:
+            return redirect(request.url)
+
+        # filename の拡張子が問題ない場合、処理を動かす
+        if file and allowed_file(file.filename):
               # 危険な文字を削除する
               filename = secure_filename(file.filename)
               # 問題なければファイルを/tmp ディレクトリに保存する
