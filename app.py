@@ -35,9 +35,8 @@ def existing_file(file):
 def upload_view():
     if request.method == 'GET':
      return render_template('upload.html')
-        
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['POST'])
 def upload_file():
     # ポストのリクエストを受け取った時に処理を動かす
     if request.method == 'POST':
@@ -46,14 +45,12 @@ def upload_file():
         file = request.files['file']
         
         # 受けとったファイルの値が存在しない場合は、リダイレクトする
-        if existing_file(file) == False:
+        if existing_file(file) and allowed_file(file.filename):
+            # 危険な文字を削除する
+            filename = secure_filename(file.filename)
+            # 問題なければファイルを/tmp ディレクトリに保存する
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(request.url)
-
-        # filename の拡張子が問題ない場合、処理を動かす
-        if file and allowed_file(file.filename):
-              # 危険な文字を削除する
-              filename = secure_filename(file.filename)
-              # 問題なければファイルを/tmp ディレクトリに保存する
-              file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-              return redirect(request.url)
+        else:
+            return redirect(request.url) # 後でエラー用の処理をつくるが、ひとまずリダイレクトにしておく    
     return 
