@@ -26,31 +26,26 @@ def allowed_file(filename):
     # ファイルの拡張子が.xml, .csv なら1 をそれ以外なら0を返す
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# アップロードされたファイルがちゃんと存在しているかを確認する
+# file の存在をチャックするため
 def existing_file(file):
     # リクエストの中にファイルがあるかとファイル名が空白でないかを確認する
    return False if file not in request.files and file.filename == '' else True
 
 @app.route('/', methods=['GET'])
 def upload_view():
-    if request.method == 'GET':
      return render_template('upload.html')
 
 @app.route('/', methods=['POST'])
-def upload_file():
-    # ポストのリクエストを受け取った時に処理を動かす
-    if request.method == 'POST':
+def upload_file():    
+    # file にPOST された値を格納する
+    file = request.files['file']
         
-        # file にPOST された値を格納する
-        file = request.files['file']
-        
-        # 受けとったファイルの値が存在しない場合は、リダイレクトする
-        if existing_file(file) and allowed_file(file.filename):
-            # 危険な文字を削除する
-            filename = secure_filename(file.filename)
-            # 問題なければファイルを/tmp ディレクトリに保存する
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(request.url)
-        else:
-            return redirect(request.url) # 後でエラー用の処理をつくるが、ひとまずリダイレクトにしておく    
-    return 
+    # 受けとったファイルの値が存在しない場合は、リダイレクトする
+    if existing_file(file) and allowed_file(file.filename):
+        # 危険な文字を削除する
+        filename = secure_filename(file.filename)
+        # 問題なければファイルを/tmp ディレクトリに保存する
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return redirect(request.url)
+    else:
+        return redirect(request.url) # 後でエラー用の処理をつくるが、ひとまずリダイレクトにしておく    
