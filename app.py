@@ -18,13 +18,25 @@ from lxml import etree
 
 # ファイルは永続的に保存しないので、保存先は/tmp にする
 UPLOAD_FOLDER = '/tmp'
-UPLOAD_FILE_PATH = '/tmp/upload.xml'
-CONVERTED_FILE_PATH = '/tmp/converted.csv'
+
+# XML2CSV
+UPLOAD_XML_FILE_PATH = '/tmp/upload.xml'
+CONVERTED_CSV_FILE_PATH = '/tmp/converted.csv'
+
+# CSV2XML
+UPLOAD_CSV_FILE_PATH = '/tmp/upload.csv'
+CONVERTED_XML_FILE_PATH = '/tmp/converted.xml'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['UPLOAD_FILE_PATH'] = UPLOAD_FILE_PATH
-app.config['CONVERTED_FILE_PATH'] = CONVERTED_FILE_PATH
+
+# XML2CSV
+app.config['UPLOAD_XML_FILE_PATH'] = UPLOAD_XML_FILE_PATH
+app.config['CONVERTED_CSV_FILE_PATH'] = CONVERTED_CSV_FILE_PATH
+
+# CSV2XML
+app.config['UPLOAD_CSV_FILE_PATH'] = UPLOAD_CSV_FILE_PATH
+app.config['CONVERTED_XML_FILE_PATH'] = CONVERTED_XML_FILE_PATH
 
 # XML とCSV の以外の拡張子は扱わない
 ALLOWED_EXTENSIONS = {'xml', 'csv'}
@@ -41,47 +53,94 @@ def existing_file(file):
 
  # アップロードとコンバートされているファイルがあれば削除する
 def rm_files(): 
-    if os.path.isfile(app.config['UPLOAD_FILE_PATH']):
-        os.remove(app.config['UPLOAD_FILE_PATH'])
+    if os.path.isfile(app.config['UPLOAD_XML_FILE_PATH']):
+        os.remove(app.config['UPLOAD_XML_FILE_PATH'])
 
-    if os.path.isfile(app.config['CONVERTED_FILE_PATH']):
-        os.remove(app.config['CONVERTED_FILE_PATH'])
-            
+    if os.path.isfile(app.config['CONVERTED_CSV_FILE_PATH']):
+        os.remove(app.config['CONVERTED_CSV_FILE_PATH'])
+    
+    if os.path.isfile(app.config['UPLOAD_CSV_FILE_PATH']):
+        os.remove(app.config['UPLOAD_CSV_FILE_PATH'])
+
+    if os.path.isfile(app.config['CONVERTED_CSV_FILE_PATH']):
+        os.remove(app.config['CONVERTED_XML_FILE_PATH'])
+
+
+# XML to CSV の機能            
 @app.route('/')
-def upload_view():
-    return render_template('upload.html')
+def xml2csv_view():
+    return render_template('xml2csv.html')
 
 @app.route('/', methods=['POST'])
-def upload_file():
+def upload_xml_file():
     # アップロード前に/tmp をきれいにする
     rm_files()
 
     # file にPOST された値を格納する
-    file = request.files['file']
+    xml_file = request.files['file']
         
     # 受けとったファイルの値が存在しない場合は、リダイレクトする
-    if existing_file(file) and allowed_file(file.filename):
+    if existing_file(xml_file) and allowed_file(xml_file.filename):
         # 保存するファイル名を固定する
-        filename = 'upload.xml'
+        xml_filename = 'upload.xml'
 
         # 問題なければファイルを/tmp ディレクトリに保存する
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        xml_file.save(os.path.join(app.config['UPLOAD_FOLDER'], xml_filename))
         return redirect(request.url)
     else:
         return redirect(request.url) # 後でエラー用の処理をつくるが、ひとまずリダイレクトにしておく    
 
 @app.route('/data/download')
-def download():
+def send_csv_file():
      #ファイルがアップロードされている時のみ処理を回す
-    if os.path.isfile(app.config['UPLOAD_FILE_PATH']):
+    if os.path.isfile(app.config['UPLOAD_XML_FILE_PATH']):
         # XML を読み込んでデータフレームに変換する
-        df_read_xml = pd.read_xml(app.config['UPLOAD_FILE_PATH'], encoding='utf-8')
+        df_read_xml = pd.read_xml(app.config['UPLOAD_XML_FILE_PATH'], encoding='utf-8')
 
         # データフレーム をCSV に変換する
-        df_read_xml.to_csv(app.config['CONVERTED_FILE_PATH'], encoding='utf-8', index=False)
+        df_read_xml.to_csv(app.config['CONVERTED_CSV_FILE_PATH'], encoding='utf-8', index=False)
 
          # 変換したCSV をクライアント側から保存させる
         return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), 'converted.csv', as_attachment=True)
     else:
         # ファイルが無い時はルートパスへリダイレクトする
         return redirect('/')
+
+@app.route('/csv2xml')
+def csv2xml_view():
+    return render_template('csv2xml.html')
+
+@app.route('/csv2xml', methods=['POST'])
+def upload_csv_file():
+    # アップロード前に/tmp をきれいにする
+    rm_files()
+
+    # file にPOST された値を格納する
+    csv_file = request.files['file']
+        
+    # 受けとったファイルの値が存在しない場合は、リダイレクトする
+    if existing_file(csv_file) and allowed_file(csv_file.filename):
+        # 保存するファイル名を固定する
+        csv_filename = 'upload.csv'
+
+        # 問題なければファイルを/tmp ディレクトリに保存する
+        csv_file.save(os.path.join(app.config['UPLOAD_FOLDER'], csv_filename))
+        return redirect('/csv2xml')
+    else:
+        return redirect(request.url) # 後でエラー用の処理をつくるが、ひとまずリダイレクトにしておく   
+
+@app.route('/csv2xml/data/download')
+def send_xml_file():
+     #ファイルがアップロードされている時のみ処理を回す
+    if os.path.isfile(app.config['UPLOAD_CSV_FILE_PATH']):
+        # XML を読み込んでデータフレームに変換する
+        df_read_csv = pd.read_csv(app.config['UPLOAD_CSV_FILE_PATH'], encoding='utf-8')
+
+        # データフレーム をCSV に変換する
+        df_read_csv.to_xml(app.config['CONVERTED_XML_FILE_PATH'], encoding='utf-8', index=False)
+
+         # 変換したCSV をクライアント側から保存させる
+        return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), 'converted.xml', as_attachment=True)
+    else:
+        # ファイルが無い時はルートパスへリダイレクトする
+        return redirect('/csv2xml')
