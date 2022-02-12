@@ -24,15 +24,19 @@ UPLOAD_XML_FILE_PATH = '/tmp/upload.xml'
 CONVERTED_CSV_FILE_PATH = '/tmp/converted.csv'
 
 # CSV2XML
-UPLOAD_XML_FILE_PATH = '/tmp/upload.xml'
-CONVERTED_CSV_FILE_PATH = '/tmp/converted.csv'
-
-
+UPLOAD_CSV_FILE_PATH = '/tmp/upload.csv'
+CONVERTED_XML_FILE_PATH = '/tmp/converted.xml'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# XML2CSV
 app.config['UPLOAD_XML_FILE_PATH'] = UPLOAD_XML_FILE_PATH
 app.config['CONVERTED_CSV_FILE_PATH'] = CONVERTED_CSV_FILE_PATH
+
+# CSV2XML
+app.config['UPLOAD_CSV_FILE_PATH'] = UPLOAD_CSV_FILE_PATH
+app.config['CONVERTED_XML_FILE_PATH'] = CONVERTED_XML_FILE_PATH
 
 # XML とCSV の以外の拡張子は扱わない
 ALLOWED_EXTENSIONS = {'xml', 'csv'}
@@ -49,11 +53,18 @@ def existing_file(file):
 
  # アップロードとコンバートされているファイルがあれば削除する
 def rm_files(): 
-    if os.path.isfile(app.config['UPLOAD_FILE_PATH']):
-        os.remove(app.config['UPLOAD_FILE_PATH'])
+    if os.path.isfile(app.config['UPLOAD_XML_FILE_PATH']):
+        os.remove(app.config['UPLOAD_XML_FILE_PATH'])
 
-    if os.path.isfile(app.config['CONVERTED_FILE_PATH']):
-        os.remove(app.config['CONVERTED_FILE_PATH'])
+    if os.path.isfile(app.config['CONVERTED_CSV_FILE_PATH']):
+        os.remove(app.config['CONVERTED_CSV_FILE_PATH'])
+    
+    if os.path.isfile(app.config['UPLOAD_CSV_FILE_PATH']):
+        os.remove(app.config['UPLOAD_CSV_FILE_PATH'])
+
+    if os.path.isfile(app.config['CONVERTED_CSV_FILE_PATH']):
+        os.remove(app.config['CONVERTED_XML_FILE_PATH'])
+
 
 # XML to CSV の機能            
 @app.route('/')
@@ -110,10 +121,10 @@ def upload_csv_file():
     # 受けとったファイルの値が存在しない場合は、リダイレクトする
     if existing_file(csv_file) and allowed_file(csv_file.filename):
         # 保存するファイル名を固定する
-        csv_filename = 'upload.xml'
+        csv_filename = 'upload.csv'
 
         # 問題なければファイルを/tmp ディレクトリに保存する
         csv_file.save(os.path.join(app.config['UPLOAD_FOLDER'], csv_filename))
-        return redirect(request.url)
+        return redirect('/csv2xml')
     else:
         return redirect(request.url) # 後でエラー用の処理をつくるが、ひとまずリダイレクトにしておく   
