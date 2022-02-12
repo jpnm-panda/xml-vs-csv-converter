@@ -6,7 +6,7 @@ from pickle import TRUE
 from re import U, template
 import re
 from tabnanny import filename_only
-from flask import Flask, flash, request, redirect, url_for, render_template, send_from_directory
+from flask import Flask, flash, request, redirect, url_for, render_template, send_file, send_from_directory
 import redis
 import os
 from werkzeug.utils import secure_filename
@@ -17,6 +17,7 @@ from lxml import etree
 
 # ファイルは永続的に保存しないので、保存先は/tmp にする
 UPLOAD_FOLDER = '/tmp'
+UPLOAD_FILE_PATH = '/tmp/upload.xml'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -45,8 +46,8 @@ def upload_file():
         
     # 受けとったファイルの値が存在しない場合は、リダイレクトする
     if existing_file(file) and allowed_file(file.filename):
-        # 危険な文字を削除する
-        filename = secure_filename(file.filename)
+        # 保存するファイル名を固定する
+        filename = 'upload.xml'
 
         # 問題なければファイルを/tmp ディレクトリに保存する
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -56,5 +57,16 @@ def upload_file():
 
 @app.route('/data/download')
 def download():
-    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), 'conversion-test.csv', as_attachment=True)
-        
+     #ファイルがアップロードされている時のみ処理を回す
+    if os.path.isfile('/tmp/upload.xml'):
+     # XML を読み込んでデータフレームに変換する
+     df_read_xml = pd.read_xml('/tmp/upload.xml', encoding='utf-8')
+
+     # データフレーム をCSV に変換する
+     df_read_xml.to_csv('/tmp/converted.csv', encoding='utf-8', index=False)
+
+     # 変換したCSV をクライアント側から保存させる
+     return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), 'converted.csv', as_attachment=True)
+    else:
+     # ファイルが無い時はルートパスへリダイレクトする
+     return redirect('/')
