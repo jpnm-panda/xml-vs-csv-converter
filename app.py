@@ -93,7 +93,7 @@ def upload_xml_file():
 @app.route('/data/download')
 def send_csv_file():
      #ファイルがアップロードされている時のみ処理を回す
-    if os.path.isfile(app.config['UPLOAD_FILE_PATH']):
+    if os.path.isfile(app.config['UPLOAD_XML_FILE_PATH']):
         # XML を読み込んでデータフレームに変換する
         df_read_xml = pd.read_xml(app.config['UPLOAD_XML_FILE_PATH'], encoding='utf-8')
 
@@ -128,3 +128,19 @@ def upload_csv_file():
         return redirect('/csv2xml')
     else:
         return redirect(request.url) # 後でエラー用の処理をつくるが、ひとまずリダイレクトにしておく   
+
+@app.route('/csv2xml/data/download')
+def send_xml_file():
+     #ファイルがアップロードされている時のみ処理を回す
+    if os.path.isfile(app.config['UPLOAD_CSV_FILE_PATH']):
+        # XML を読み込んでデータフレームに変換する
+        df_read_csv = pd.read_csv(app.config['UPLOAD_CSV_FILE_PATH'], encoding='utf-8')
+
+        # データフレーム をCSV に変換する
+        df_read_csv.to_xml(app.config['CONVERTED_XML_FILE_PATH'], encoding='utf-8', index=False)
+
+         # 変換したCSV をクライアント側から保存させる
+        return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), 'converted.xml', as_attachment=True)
+    else:
+        # ファイルが無い時はルートパスへリダイレクトする
+        return redirect('/csv2xml')
