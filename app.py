@@ -18,9 +18,12 @@ from lxml import etree
 # ファイルは永続的に保存しないので、保存先は/tmp にする
 UPLOAD_FOLDER = '/tmp'
 UPLOAD_FILE_PATH = '/tmp/upload.xml'
+CONVERTED_FILE_PATH = '/tmp/converted.csv'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FILE_PATH'] = UPLOAD_FILE_PATH
+app.config['CONVERTED_FILE_PATH'] = CONVERTED_FILE_PATH
 
 # XML とCSV の以外の拡張子は扱わない
 ALLOWED_EXTENSIONS = {'xml', 'csv'}
@@ -35,12 +38,16 @@ def existing_file(file):
     # リクエストの中にファイルがあるかとファイル名が空白でないかを確認する
    return False if file not in request.files and file.filename == '' else True
 
+def rm_uploaded_file():
+    if os.path.isfile('/tmp/upload.xml'):
+        os.remove('/tmp/upload.xml')      
+
 @app.route('/')
 def upload_view():
      return render_template('upload.html')
 
 @app.route('/', methods=['POST'])
-def upload_file():    
+def upload_file():
     # file にPOST された値を格納する
     file = request.files['file']
         
@@ -63,10 +70,12 @@ def download():
      df_read_xml = pd.read_xml('/tmp/upload.xml', encoding='utf-8')
 
      # データフレーム をCSV に変換する
-     df_read_xml.to_csv('/tmp/converted.csv', encoding='utf-8', index=False)
+     converted_csv = df_read_xml.to_csv(app.config['CONVERTED_FILE_PATH'], encoding='utf-8', index=False)
+     converted_csv = os.path.join(app.config['CONVERTED_FILE_PATH'])
 
+     rm_uploaded_file()
      # 変換したCSV をクライアント側から保存させる
-     return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), 'converted.csv', as_attachment=True)
+     return send_file(converted_csv, 'converted.csv', as_attachment=True)
     else:
      # ファイルが無い時はルートパスへリダイレクトする
      return redirect('/')
