@@ -19,22 +19,22 @@ from lxml import etree
 # ファイルは永続的に保存しないので、保存先は/tmp にする
 UPLOAD_FOLDER = '/tmp'
 
-# XML2CSV
+# XML2CSV で使用する環境変数
 UPLOAD_XML_FILE_PATH = '/tmp/upload.xml'
 CONVERTED_CSV_FILE_PATH = '/tmp/converted.csv'
 
-# CSV2XML
+# CSV2XML で使用する環境変数
 UPLOAD_CSV_FILE_PATH = '/tmp/upload.csv'
 CONVERTED_XML_FILE_PATH = '/tmp/converted.xml'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# XML2CSV
+# XML2CSV に使う
 app.config['UPLOAD_XML_FILE_PATH'] = UPLOAD_XML_FILE_PATH
 app.config['CONVERTED_CSV_FILE_PATH'] = CONVERTED_CSV_FILE_PATH
 
-# CSV2XML
+# CSV2XML に使う
 app.config['UPLOAD_CSV_FILE_PATH'] = UPLOAD_CSV_FILE_PATH
 app.config['CONVERTED_XML_FILE_PATH'] = CONVERTED_XML_FILE_PATH
 
