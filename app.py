@@ -46,25 +46,26 @@ def allowed_file(filename):
     # ファイルの拡張子が.xml, .csv なら1 をそれ以外なら0を返す
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# file の存在をチャックするため 
+# file の存在をチェックするため 
 def existing_file(file):
     # リクエストの中にファイルがあるかとファイル名が空白でないかを確認する
    return False if file not in request.files and file.filename == '' else True
 
- # アップロードとコンバートされているファイルがあれば削除する
+ # アップロード前に/tmp の中をきれいにする
 def rm_files(): 
+    # XML2CSV で作成したものを削除する
     if os.path.isfile(app.config['UPLOAD_XML_FILE_PATH']):
         os.remove(app.config['UPLOAD_XML_FILE_PATH'])
 
     if os.path.isfile(app.config['CONVERTED_CSV_FILE_PATH']):
         os.remove(app.config['CONVERTED_CSV_FILE_PATH'])
     
+    # CSV2XML で作成したものを削除する
     if os.path.isfile(app.config['UPLOAD_CSV_FILE_PATH']):
         os.remove(app.config['UPLOAD_CSV_FILE_PATH'])
 
     if os.path.isfile(app.config['CONVERTED_CSV_FILE_PATH']):
         os.remove(app.config['CONVERTED_XML_FILE_PATH'])
-
 
 # XML to CSV の機能            
 @app.route('/')
