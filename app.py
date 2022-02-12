@@ -18,13 +18,21 @@ from lxml import etree
 
 # ファイルは永続的に保存しないので、保存先は/tmp にする
 UPLOAD_FOLDER = '/tmp'
-UPLOAD_FILE_PATH = '/tmp/upload.xml'
-CONVERTED_FILE_PATH = '/tmp/converted.csv'
+
+# XML2CSV
+UPLOAD_XML_FILE_PATH = '/tmp/upload.xml'
+CONVERTED_CSV_FILE_PATH = '/tmp/converted.csv'
+
+# CSV2XML
+UPLOAD_XML_FILE_PATH = '/tmp/upload.xml'
+CONVERTED_CSV_FILE_PATH = '/tmp/converted.csv'
+
+
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['UPLOAD_FILE_PATH'] = UPLOAD_FILE_PATH
-app.config['CONVERTED_FILE_PATH'] = CONVERTED_FILE_PATH
+app.config['UPLOAD_XML_FILE_PATH'] = UPLOAD_XML_FILE_PATH
+app.config['CONVERTED_CSV_FILE_PATH'] = CONVERTED_CSV_FILE_PATH
 
 # XML とCSV の以外の拡張子は扱わない
 ALLOWED_EXTENSIONS = {'xml', 'csv'}
@@ -76,13 +84,36 @@ def send_csv_file():
      #ファイルがアップロードされている時のみ処理を回す
     if os.path.isfile(app.config['UPLOAD_FILE_PATH']):
         # XML を読み込んでデータフレームに変換する
-        df_read_xml = pd.read_xml(app.config['UPLOAD_FILE_PATH'], encoding='utf-8')
+        df_read_xml = pd.read_xml(app.config['UPLOAD_XML_FILE_PATH'], encoding='utf-8')
 
         # データフレーム をCSV に変換する
-        df_read_xml.to_csv(app.config['CONVERTED_FILE_PATH'], encoding='utf-8', index=False)
+        df_read_xml.to_csv(app.config['CONVERTED_CSV_FILE_PATH'], encoding='utf-8', index=False)
 
          # 変換したCSV をクライアント側から保存させる
         return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER']), 'converted.csv', as_attachment=True)
     else:
         # ファイルが無い時はルートパスへリダイレクトする
         return redirect('/')
+
+@app.route('/csv2xml')
+def csv2xml_view():
+    return render_template('csv2xml.html')
+
+@app.route('/csv2xml', methods=['POST'])
+def upload_csv_file():
+    # アップロード前に/tmp をきれいにする
+    rm_files()
+
+    # file にPOST された値を格納する
+    csv_file = request.files['file']
+        
+    # 受けとったファイルの値が存在しない場合は、リダイレクトする
+    if existing_file(csv_file) and allowed_file(csv_file.filename):
+        # 保存するファイル名を固定する
+        csv_filename = 'upload.xml'
+
+        # 問題なければファイルを/tmp ディレクトリに保存する
+        csv_file.save(os.path.join(app.config['UPLOAD_FOLDER'], csv_filename))
+        return redirect(request.url)
+    else:
+        return redirect(request.url) # 後でエラー用の処理をつくるが、ひとまずリダイレクトにしておく   
