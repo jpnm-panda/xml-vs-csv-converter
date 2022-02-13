@@ -1,9 +1,23 @@
-<!doctype html>
+{% extends "application.html" %}
+{% block body %}
+<main>
+    <div class="wrap">
+        <div class="container-has-shadow"><span></span>
+            <div class="heading-body">
+                <h1 class="heading-content">
+                    <span class="strong">CSV</span> を <span class="strong">XML</span> へ変換する
+                </h1>
+            </div>
+            <form method="post" enctype="multipart/form-data" class="btn-wrap">
+                <div class="select-body">
+                    <p class="description">変換する<span class="strong">CSV</span> ファイルを選択してください</p>
+                    <input type="file" name="file" class="select">
+                </div>
 
-<title>Upload new File</title>
-<h1>Upload new File</h1>
-<form method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="submit" value="Upload">
-    <button><a href="/csv2xml/data/download">download</a></button>
-</form>
+                <input type="submit" value="ファイルをアップロードする" class="btn">
+                <button class="btn"><a href="/csv2xml/data/download" class="btn-link">ファイルをダウンロードする</a></button>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}
