@@ -1,9 +1,32 @@
-<!doctype html>
+<!DOCTYPE html>
+<html lang="ja">
 
-<title>Upload new File</title>
-<h1>Upload new File</h1>
-<form method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="submit" value="Upload">
-    <button><a href="/data/download">download</a></button>
-</form>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>XML vs CSV コンバーター</title>
+    </head>
+
+    <body>
+        <header class="wrap">
+            <nav>
+                <ul class="nav-list">
+                    <il class="nav-item"><a href="/" class="nav-link">XML を変換</a></il>
+                    <il class="nav-item"><a href="/csv2xml" class="nav-link">CSV を変換</a></il>
+                </ul>
+            </nav>
+        </header>
+        <main class="wrap">
+            <div class="container-has-shadow">
+                <h1>XML をCSV へ変換する</h1>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <input type="file" name="file" class="btn-primary">
+                <input type="submit" value="Upload" class="btn-primary">
+                <button class="btn-primary"><a href="/data/download">download</a></button>
+            </form>
+        </main>
+    </body>
+
+</html>
